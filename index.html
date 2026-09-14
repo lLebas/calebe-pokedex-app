@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pokédex</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="device">
+    <header class="device__header">
+      <div class="device__lights" aria-hidden="true">
+        <span class="light light--on"></span>
+        <span class="light"></span>
+        <span class="light"></span>
+      </div>
+      <h1 class="device__title">Pokédex</h1>
+    </header>
+
+    <form id="form-busca" class="scanner" autocomplete="off">
+      <label for="campo-busca" class="scanner__label">Buscar Pokémon</label>
+      <div class="scanner__row">
+        <input
+          type="text"
+          id="campo-busca"
+          name="busca"
+          placeholder="Nome ou número — ex: pikachu, 25"
+          required
+        />
+        <button type="submit" id="botao-buscar">Escanear</button>
+      </div>
+    </form>
+
+    <section id="resultado" class="screen" aria-live="polite">
+      <p class="screen__hint">
+        Digite o nome ou o número de um Pokémon e aperte “Escanear” para ver os dados.
+      </p>
+    </section>
+
+    <footer class="device__footer">
+      <span>Dados via PokeAPI</span>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
