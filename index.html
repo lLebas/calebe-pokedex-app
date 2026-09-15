@@ -43,11 +43,21 @@
       </p>
     </section>
 
+    <section class="team">
+      <div class="team__header">
+        <h2 class="team__title">Meu Time</h2>
+        <span class="team__count" id="time-contador">0/6</span>
+      </div>
+      <ul id="lista-time" class="team__lista">
+        <li class="team__vazio" id="time-vazio">Nenhum Pokémon no time ainda.</li>
+      </ul>
+    </section>
+
     <footer class="device__footer">
-      <span>Dados via PokeAPI</span>
+      <span>Dados via PokeAPI · Time salvo no Supabase</span>
     </footer>
   </main>
 
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

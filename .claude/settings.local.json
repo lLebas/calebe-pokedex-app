@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(git init)",
+      "PowerShell(winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements --silent)",
+      "PowerShell(winget install --id GitHub.cli -e --source winget --accept-package-agreements --accept-source-agreements --silent)",
+      "PowerShell(git config user.email 2>$null)",
+      "PowerShell(git config user.name 2>$null)",
+      "PowerShell(gh --version)",
+      "WebFetch(domain:llebas.github.io)"
+    ]
+  }
+}

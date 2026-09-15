@@ -1,8 +1,23 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// TODO: troque pelos dados do SEU projeto Supabase (Project Settings → API).
+const SUPABASE_URL = "https://SEU-PROJETO.supabase.co";
+const SUPABASE_ANON_KEY = "SUA_CHAVE_ANON";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const TABELA_TIME = "time_pokemon";
+const TAMANHO_MAX_TIME = 6;
+
 const BASE_URL = "https://pokeapi.co/api/v2/pokemon/";
 
 const form = document.getElementById("form-busca");
 const campoBusca = document.getElementById("campo-busca");
 const resultado = document.getElementById("resultado");
+const listaTime = document.getElementById("lista-time");
+const timeVazio = document.getElementById("time-vazio");
+const timeContador = document.getElementById("time-contador");
+
+let pokemonAtual = null;
 
 const NOMES_STATS = {
   hp: "HP",
@@ -86,6 +101,8 @@ function exibirPokemon(dados) {
 
   const stats = dados.stats.map(renderStat).join("");
 
+  pokemonAtual = { numero, nome, imagem, tipos: dados.types.map((t) => t.type.name) };
+
   resultado.innerHTML = `
     <div class="card">
       <div class="card__top">
@@ -109,9 +126,103 @@ function exibirPokemon(dados) {
       </div>
 
       <div class="card__stats">${stats}</div>
+
+      <div class="card__acoes">
+        <button type="button" id="botao-add-time" class="botao-time">+ Adicionar ao time</button>
+        <span class="card__aviso" id="aviso-time"></span>
+      </div>
     </div>
   `;
+
+  document
+    .getElementById("botao-add-time")
+    .addEventListener("click", () => adicionarAoTime(pokemonAtual));
 }
+
+// CREATE — salva o Pokémon atual no time (Supabase)
+async function adicionarAoTime(pokemon) {
+  if (!pokemon) return;
+  const aviso = document.getElementById("aviso-time");
+  const botao = document.getElementById("botao-add-time");
+
+  const { count } = await supabase
+    .from(TABELA_TIME)
+    .select("*", { count: "exact", head: true });
+
+  if (count >= TAMANHO_MAX_TIME) {
+    aviso.textContent = "Time completo (6/6).";
+    return;
+  }
+
+  botao.disabled = true;
+  const { error } = await supabase.from(TABELA_TIME).insert({
+    nome_item: pokemon.nome,
+    dados_extra: {
+      numero: pokemon.numero,
+      imagem: pokemon.imagem,
+      tipos: pokemon.tipos,
+    },
+  });
+
+  if (error) {
+    console.error(error);
+    aviso.textContent = "Erro ao salvar. Veja o console (F12).";
+    botao.disabled = false;
+    return;
+  }
+
+  aviso.textContent = "Adicionado ao time!";
+  await listarTime();
+}
+
+// READ — carrega e desenha o time salvo
+async function listarTime() {
+  const { data, error } = await supabase
+    .from(TABELA_TIME)
+    .select("*")
+    .order("criado_em", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  timeContador.textContent = `${data.length}/${TAMANHO_MAX_TIME}`;
+
+  if (data.length === 0) {
+    listaTime.innerHTML = `<li class="team__vazio" id="time-vazio">Nenhum Pokémon no time ainda.</li>`;
+    return;
+  }
+
+  listaTime.innerHTML = data
+    .map((item) => {
+      const extra = item.dados_extra || {};
+      return `
+        <li class="team__item">
+          <img src="${extra.imagem || ""}" alt="${escaparHTML(item.nome_item)}" />
+          <span class="team__nome">${capitalizar(item.nome_item)}</span>
+          <button type="button" class="team__remover" data-id="${item.id}" aria-label="Remover ${escaparHTML(item.nome_item)} do time">✕</button>
+        </li>
+      `;
+    })
+    .join("");
+
+  listaTime.querySelectorAll(".team__remover").forEach((botao) => {
+    botao.addEventListener("click", () => removerDoTime(botao.dataset.id));
+  });
+}
+
+// DELETE — remove um Pokémon do time
+async function removerDoTime(id) {
+  const { error } = await supabase.from(TABELA_TIME).delete().eq("id", id);
+  if (error) {
+    console.error(error);
+    return;
+  }
+  await listarTime();
+}
+
+listarTime();
 
 function renderStat(stat) {
   const nome = NOMES_STATS[stat.stat.name] || stat.stat.name;
