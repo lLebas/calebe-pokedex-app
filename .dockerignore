@@ -4,6 +4,6 @@ README.md
 *.md
 Dockerfile
 .dockerignore
-node_modules
+node_modules/
 *.log
 .DS_Store
