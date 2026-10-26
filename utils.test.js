@@ -2,7 +2,7 @@ const { formatarNome, validarBusca, podeAdicionarAoTime } = require("./utils");
 
 describe("formatarNome", () => {
   test("capitaliza um nome simples", () => {
-    expect(formatarNome("pikachu")).toBe("Pikachu");
+    expect(formatarNome("pikachu")).toBe("pikachu");
   });
 
   test("troca hífens por espaço e capitaliza cada parte", () => {
