@@ -18,6 +18,7 @@ const timeVazio = document.getElementById("time-vazio");
 const timeContador = document.getElementById("time-contador");
 
 let pokemonAtual = null;
+let timeAtual = [];
 
 const NOMES_STATS = {
   hp: "HP",
@@ -53,6 +54,10 @@ form.addEventListener("submit", (evento) => {
   evento.preventDefault();
   const termo = campoBusca.value.trim().toLowerCase();
   if (!termo) return;
+  if (!validarBusca(termo)) {
+    exibirErro(termo);
+    return;
+  }
   buscarPokemon(termo);
 });
 
@@ -85,7 +90,7 @@ function exibirErro(termo) {
 
 function exibirPokemon(dados) {
   const numero = String(dados.id).padStart(4, "0");
-  const nome = capitalizar(dados.name);
+  const nome = formatarNome(dados.name);
   const imagem =
     dados.sprites?.other?.["official-artwork"]?.front_default ||
     dados.sprites?.front_default ||
@@ -94,7 +99,7 @@ function exibirPokemon(dados) {
   const tipos = dados.types
     .map((t) => {
       const tipo = t.type.name;
-      const label = NOMES_TIPOS[tipo] || capitalizar(tipo);
+      const label = NOMES_TIPOS[tipo] || formatarNome(tipo);
       return `<span class="badge badge--${tipo}">${label}</span>`;
     })
     .join("");
@@ -145,12 +150,11 @@ async function adicionarAoTime(pokemon) {
   const aviso = document.getElementById("aviso-time");
   const botao = document.getElementById("botao-add-time");
 
-  const { count } = await supabase
-    .from(TABELA_TIME)
-    .select("*", { count: "exact", head: true });
-
-  if (count >= TAMANHO_MAX_TIME) {
-    aviso.textContent = "Time completo (6/6).";
+  if (!podeAdicionarAoTime(timeAtual, pokemon, TAMANHO_MAX_TIME)) {
+    aviso.textContent =
+      timeAtual.length >= TAMANHO_MAX_TIME
+        ? "Time completo (6/6)."
+        : "Esse Pokémon já está no time.";
     return;
   }
 
@@ -187,6 +191,7 @@ async function listarTime() {
     return;
   }
 
+  timeAtual = data.map((item) => ({ nome: item.nome_item }));
   timeContador.textContent = `${data.length}/${TAMANHO_MAX_TIME}`;
 
   if (data.length === 0) {
@@ -200,7 +205,7 @@ async function listarTime() {
       return `
         <li class="team__item">
           <img src="${extra.imagem || ""}" alt="${escaparHTML(item.nome_item)}" />
-          <span class="team__nome">${capitalizar(item.nome_item)}</span>
+          <span class="team__nome">${formatarNome(item.nome_item)}</span>
           <button type="button" class="team__remover" data-id="${item.id}" aria-label="Remover ${escaparHTML(item.nome_item)} do time">✕</button>
         </li>
       `;
@@ -237,10 +242,6 @@ function renderStat(stat) {
       <span class="stat__valor">${valor}</span>
     </div>
   `;
-}
-
-function capitalizar(texto) {
-  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 function escaparHTML(texto) {
